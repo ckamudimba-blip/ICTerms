@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="Outil de soumission de transport avec calcul des Incoterms® 2020 — Maritime et Routier">
+<title>Outil de soumission — Incoterms® 2020</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:system-ui,-apple-system,sans-serif;font-size:14px;background:#f4f6f9;color:#111;min-height:100vh}
+  .header{background:#0C447C;color:#fff;padding:16px 20px;display:flex;align-items:center;justify-content:space-between}
+  .header-title{font-size:16px;font-weight:600}
+  .header-sub{font-size:12px;opacity:.75;margin-top:2px}
+  .header-badge{font-size:11px;padding:4px 10px;border-radius:20px;background:rgba(255,255,255,.15);color:#fff}
+  .container{max-width:860px;margin:0 auto;padding:1.25rem 1rem 3rem}
+  .section{background:#fff;border:0.5px solid #e0e4ea;border-radius:10px;padding:1.25rem;margin-bottom:1rem;box-shadow:0 1px 3px rgba(0,0,0,.04)}
+  .section-title{font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.07em;margin-bottom:1rem}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .grid3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+  @media(max-width:600px){.grid2,.grid3{grid-template-columns:1fr}}
+  .field{display:flex;flex-direction:column;gap:4px}
+  label{font-size:13px;color:#555;font-weight:500}
+  input,select,textarea{width:100%;border-radius:6px;border:1px solid #dde2ea;padding:8px 10px;font-size:14px;background:#fff;color:#111;font-family:inherit;transition:border-color .15s}
+  input:focus,select:focus,textarea:focus{outline:none;border-color:#185FA5;box-shadow:0 0 0 3px rgba(24,95,165,.1)}
+  textarea{resize:vertical;min-height:64px}
+  .mode-tabs{display:flex;gap:8px;margin-bottom:14px}
+  .mode-tab{padding:7px 18px;border-radius:6px;border:1px solid #dde2ea;font-size:13px;cursor:pointer;background:#fff;color:#555;font-weight:500;transition:all .15s}
+  .mode-tab.active{border:2px solid #185FA5;background:#E6F1FB;color:#0C447C}
+  .incoterm-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(90px,1fr));gap:8px;margin-top:4px}
+  .inc-btn{border:1px solid #dde2ea;border-radius:8px;padding:9px 6px;font-size:12px;font-weight:600;background:#fff;color:#333;cursor:pointer;text-align:center;transition:all .15s}
+  .inc-btn:hover:not(.selected){background:#f5f7fa;border-color:#bbb}
+  .inc-btn.selected{border:2px solid #185FA5;background:#E6F1FB;color:#0C447C}
+  .inc-badge{font-size:10px;font-weight:400;color:#888;display:block;margin-top:3px;line-height:1.3}
+  .inc-btn.selected .inc-badge{color:#185FA5}
+  .inc-desc{margin-top:10px;padding:11px 13px;background:#E6F1FB;border-radius:8px;font-size:13px;color:#0C447C;display:none;line-height:1.6;border-left:3px solid #185FA5}
+  .alert-zone{display:flex;flex-direction:column;gap:7px;margin-top:10px}
+  .global-alerts{display:flex;flex-direction:column;gap:7px;margin-bottom:1rem}
+  .alert{display:flex;gap:10px;align-items:flex-start;padding:11px 13px;border-radius:8px;font-size:13px;line-height:1.5;border:1px solid}
+  .a-err{background:#FEF2F2;border-color:#FCA5A5;color:#7F1D1D}
+  .a-warn{background:#FFFBEB;border-color:#FCD34D;color:#78350F}
+  .a-info{background:#EFF6FF;border-color:#93C5FD;color:#1E3A5F}
+  .a-ok{background:#F0FDF4;border-color:#86EFAC;color:#14532D}
+  .a-icon{font-size:15px;flex-shrink:0;margin-top:1px}
+  .a-title{font-weight:600;margin-bottom:2px;font-size:13px}
+  .cost-header{display:grid;grid-template-columns:1fr 56px 120px 28px;gap:8px;margin-bottom:6px;padding:0 2px}
+  .cost-header span{font-size:11px;color:#999;font-weight:500;text-transform:uppercase;letter-spacing:.05em}
+  .cost-row{display:grid;grid-template-columns:1fr 56px 120px 28px;gap:8px;align-items:center;margin-bottom:8px}
+  .del-btn{border:none;background:transparent;color:#bbb;font-size:20px;cursor:pointer;line-height:1;padding:0;transition:color .15s}
+  .del-btn:hover{color:#EF4444}
+  .add-btn{border:1.5px dashed #dde2ea;border-radius:8px;padding:9px;font-size:13px;color:#888;background:transparent;cursor:pointer;width:100%;text-align:center;margin-top:4px;transition:all .15s}
+  .add-btn:hover{background:#f5f7fa;border-color:#bbb}
+  .totals{background:#f8fafc;border-radius:8px;padding:14px;margin-top:12px;border:1px solid #e8ecf2}
+  .total-line{display:flex;justify-content:space-between;align-items:center;font-size:13px;color:#666;padding:4px 0}
+  .total-line input{width:60px;padding:3px 6px;font-size:13px;text-align:right}
+  .total-final{display:flex;justify-content:space-between;font-size:17px;font-weight:600;color:#111;padding-top:10px;margin-top:8px;border-top:1.5px solid #dde2ea}
+  .cur-row{display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap}
+  .cur-row label{font-size:13px;color:#555;white-space:nowrap;font-weight:500}
+  .cur-row select{width:auto}
+  .rate-info{font-size:12px;color:#888;font-style:italic}
+  .action-row{display:flex;gap:10px;margin-top:1.75rem}
+  .btn-reset{flex:1;padding:11px;border-radius:8px;border:1px solid #dde2ea;background:#fff;font-size:14px;font-weight:500;cursor:pointer;color:#444;transition:all .15s}
+  .btn-reset:hover{background:#f5f7fa}
+  .btn-gen{flex:2;padding:11px;border-radius:8px;border:2px solid #185FA5;background:#185FA5;font-size:14px;font-weight:600;cursor:pointer;color:#fff;transition:all .15s}
+  .btn-gen:hover:not(:disabled){background:#0C447C;border-color:#0C447C}
+  .btn-gen:disabled{background:#aaa;border-color:#aaa;cursor:not-allowed;opacity:.7}
+  .pro-badge{display:inline-block;font-size:10px;padding:2px 8px;border-radius:20px;background:rgba(255,255,255,.25);color:#fff;font-weight:600;margin-left:6px;vertical-align:middle}
+  .payment-row{display:flex;align-items:center;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .payment-row label{font-size:13px;color:#555;white-space:nowrap;font-weight:500}
+  .payment-row select{width:auto;flex:1}
+  .footer{text-align:center;font-size:12px;color:#aaa;margin-top:2rem;padding-bottom:1rem}
+  .converted{text-align:right;font-size:12px;color:#888;margin-top:5px;font-style:italic}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <div class="header-title">Outil de soumission Transport & Incoterms</div>
+    <div class="header-sub">Incoterms® 2020 — Maritime & Routier</div>
+  </div>
+  <div class="header-badge">Version Beta</div>
+</div>
+
+<div class="container">
+
+  <div id="global-alert-zone" class="global-alerts"></div>
+
+  <!-- INFORMATIONS GÉNÉRALES -->
+  <div class="section">
+    <div class="section-title">Informations générales</div>
+    <div class="grid2" style="margin-bottom:12px">
+      <div class="field"><label>Société / Transitaire</label><input type="text" id="company" placeholder="Ex: TransLog Afrique SARL"></div>
+      <div class="field"><label>Référence devis</label><input type="text" id="ref" placeholder="Ex: DEV-2026-001"></div>
+    </div>
+    <div class="grid3">
+      <div class="field"><label>Date du devis</label><input type="date" id="date" onchange="runAlerts()"></div>
+      <div class="field"><label>Validité (jours)</label><input type="number" id="validity" value="30" min="1" oninput="runAlerts()"></div>
+      <div class="field"><label>Contact</label><input type="text" id="contact" placeholder="Email ou téléphone"></div>
+    </div>
+  </div>
+
+  <!-- EXPÉDITEUR & DESTINATAIRE -->
+  <div class="section">
+    <div class="section-title">Expéditeur & destinataire</div>
+    <div class="grid2">
+      <div class="field"><label>Expéditeur</label><input type="text" id="shipper" placeholder="Nom, pays" oninput="runAlerts()"></div>
+      <div class="field"><label>Destinataire</label><input type="text" id="consignee" placeholder="Nom, pays" oninput="runAlerts()"></div>
+      <div class="field"><label>Port / Ville d'origine</label><input type="text" id="origin" placeholder="Ex: Shanghai, CN" oninput="runAlerts()"></div>
+      <div class="field"><label>Port / Ville de destination</label><input type="text" id="dest" placeholder="Ex: Pointe-Noire, CG" oninput="runAlerts()"></div>
+    </div>
+  </div>
+
+  <!-- MODE DE TRANSPORT -->
+  <div class="section">
+    <div class="section-title">Mode de transport</div>
+    <div class="mode-tabs">
+      <button class="mode-tab active" onclick="setMode('maritime',this)">🚢 Maritime</button>
+      <button class="mode-tab" onclick="setMode('road',this)">🚛 Routier</button>
+    </div>
+    <div id="maritime-fields" class="grid3">
+      <div class="field"><label>Type d'envoi</label>
+        <select id="shipment-type" onchange="runAlerts()">
+          <option value="FCL">FCL – Conteneur complet</option>
+          <option value="LCL">LCL – Groupage</option>
+          <option value="RORO">RoRo – Roulier</option>
+          <option value="VRAC">Vrac / conventionnel</option>
+        </select></div>
+      <div class="field"><label>Type de conteneur</label>
+        <select id="container" onchange="runAlerts()">
+          <option value="20ST">20' Standard (21,7T / 33m³)</option>
+          <option value="40ST">40' Standard (26,5T / 67m³)</option>
+          <option value="40HC">40' High Cube (26,5T / 76m³)</option>
+          <option value="20RF">20' Réfrigéré (27,4T / 28m³)</option>
+          <option value="40RF">40' Réfrigéré (29,5T / 67m³)</option>
+        </select></div>
+      <div class="field"><label>Nombre d'unités</label><input type="number" id="units" value="1" min="1"></div>
+    </div>
+    <div id="road-fields" class="grid3" style="display:none">
+      <div class="field"><label>Type de véhicule</label>
+        <select id="truck-type">
+          <option>Semi-remorque 40T</option>
+          <option>Porteur 20T</option>
+          <option>Camionnette</option>
+          <option>Plateau</option>
+          <option>Frigo</option>
+        </select></div>
+      <div class="field"><label>Nombre de camions</label><input type="number" id="trucks" value="1" min="1"></div>
+      <div class="field"><label>Distance estimée (km)</label><input type="number" id="km" placeholder="Ex: 1500" oninput="runAlerts()"></div>
+    </div>
+  </div>
+
+  <!-- MARCHANDISE -->
+  <div class="section">
+    <div class="section-title">Marchandise</div>
+    <div class="grid3" style="margin-bottom:12px">
+      <div class="field"><label>Nature de la marchandise</label><input type="text" id="goods" placeholder="Ex: Matériel électrique" oninput="runAlerts()"></div>
+      <div class="field"><label>Poids brut (kg)</label><input type="number" id="weight" placeholder="Ex: 5000" oninput="runAlerts()"></div>
+      <div class="field"><label>Volume (m³)</label><input type="number" id="volume" placeholder="Ex: 12.5" step="0.1" oninput="runAlerts()"></div>
+    </div>
+    <div class="grid2">
+      <div class="field"><label>Valeur commerciale (USD)</label><input type="number" id="goods-value" placeholder="Ex: 50000" oninput="runAlerts();calcTotals()"></div>
+      <div class="field"><label>Code HS / Douanier</label><input type="text" id="hs" placeholder="Ex: 8544.42" oninput="runAlerts()"></div>
+    </div>
+    <div class="payment-row">
+      <label>Mode de paiement :</label>
+      <select id="payment" onchange="runAlerts()">
+        <option value="">— Non précisé —</option>
+        <option value="LC">Lettre de crédit (L/C)</option>
+        <option value="TT">Virement bancaire (T/T)</option>
+        <option value="CAD">Documents contre paiement (CAD)</option>
+        <option value="OA">Compte ouvert (Open Account)</option>
+        <option value="PREPAY">Paiement anticipé</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- INCOTERM -->
+  <div class="section">
+    <div class="section-title">Incoterm <span style="font-size:11px;color:#bbb;font-weight:400;margin-left:6px;text-transform:none">Incoterms® 2020 — Chambre de Commerce Internationale</span></div>
+    <div class="incoterm-grid" id="incoterm-grid"></div>
+    <div class="inc-desc" id="inc-desc"></div>
+    <div class="alert-zone" id="incoterm-alerts"></div>
+  </div>
+
+  <!-- POSTES DE COÛT -->
+  <div class="section">
+    <div class="section-title">Postes de coût</div>
+    <div class="cur-row">
+      <label>Devise :</label>
+      <select id="currency" onchange="calcTotals()">
+        <option value="USD">USD – Dollar américain</option>
+        <option value="EUR">EUR – Euro</option>
+        <option value="XAF">XAF – Franc CFA</option>
+        <option value="CNY">CNY – Yuan chinois</option>
+        <option value="GBP">GBP – Livre sterling</option>
+      </select>
+      <select id="currency2" onchange="calcTotals()">
+        <option value="">— Convertir aussi en —</option>
+        <option value="USD">USD</option>
+        <option value="EUR">EUR</option>
+        <option value="XAF">XAF</option>
+        <option value="CNY">CNY</option>
+        <option value="GBP">GBP</option>
+      </select>
+      <span class="rate-info" id="rate-info"></span>
+    </div>
+    <div class="cost-header">
+      <span>Description</span><span>Qté</span><span>Montant</span><span></span>
+    </div>
+    <div id="cost-rows"></div>
+    <button class="add-btn" onclick="addCostRow()">+ Ajouter un poste de coût</button>
+    <div class="totals">
+      <div class="total-line"><span>Sous-total HT</span><span id="subtotal">0,00</span></div>
+      <div class="total-line">
+        <span>Taxe / TVA</span>
+        <span style="display:flex;align-items:center;gap:6px">
+          <input type="number" id="tax" value="0" min="0" max="100" oninput="calcTotals();runAlerts()"> %
+        </span>
+      </div>
+      <div class="total-line"><span>Montant taxe</span><span id="tax-amount">0,00</span></div>
+      <div class="total-final"><span>Total général</span><span id="grand-total">0,00</span></div>
+      <div class="converted" id="converted-total"></div>
+    </div>
+  </div>
+
+  <!-- CONDITIONS -->
+  <div class="section">
+    <div class="section-title">Conditions & remarques</div>
+    <div class="field" style="margin-bottom:12px">
+      <label>Conditions particulières</label>
+      <textarea id="conditions" placeholder="Ex: Délai de transit estimé 25 jours, hors dédouanement. Assurance non incluse sauf mention contraire."></textarea>
+    </div>
+    <div class="field">
+      <label>Remarques internes <span style="font-weight:400;color:#aaa">(non visibles sur le devis)</span></label>
+      <textarea id="remarks" placeholder="Notes internes..."></textarea>
+    </div>
+  </div>
+
+  <div class="action-row">
+    <button class="btn-reset" onclick="resetForm()">↺ Réinitialiser</button>
+    <button class="btn-gen" id="btn-gen" onclick="generateQuote()">
+      Générer le devis PDF <span class="pro-badge">PRO</span>
+    </button>
+  </div>
+
+  <div class="footer">
+    Outil de soumission Transport & Incoterms® 2020 — Version Beta<br>
+    Vos retours nous aident à améliorer cet outil. Merci de partager votre expérience !
+  </div>
+
+</div>
+
+<script>
+const INCOTERMS=[
+  {code:'EXW',name:'Ex Works',modes:['M','R'],desc:'Le vendeur met la marchandise à disposition dans ses locaux. L\'acheteur supporte tous les frais, risques et formalités douanières depuis le départ usine. <strong>Déconseillé pour le commerce international</strong> — réserver aux échanges domestiques selon la CCI.'},
+  {code:'FCA',name:'Free Carrier',modes:['M','R'],desc:'Le vendeur livre au transporteur désigné par l\'acheteur. Adapté à tous modes y compris les conteneurs FCL/LCL. <strong>Nouveauté 2020 :</strong> le vendeur peut récupérer un connaissement à bord (B/L) auprès du transporteur de l\'acheteur — compatible avec les lettres de crédit.'},
+  {code:'FAS',name:'Free Alongside Ship',modes:['M'],desc:'Le vendeur règle le transport jusqu\'au port d\'embarquement et effectue les formalités d\'exportation. La marchandise est livrée le long du navire. Réservé au <strong>transport maritime conventionnel</strong> (vrac, non conteneurisé).'},
+  {code:'FOB',name:'Free On Board',modes:['M'],desc:'Le vendeur livre la marchandise à bord du navire au port d\'embarquement. Le transfert des charges et risques se fait dès la mise à bord. Réservé au <strong>maritime conventionnel</strong>. Pour les conteneurs FCL/LCL, utiliser FCA.'},
+  {code:'CFR',name:'Cost & Freight',modes:['M'],desc:'Le vendeur paie le fret jusqu\'au port de destination. Le transfert des risques se fait à l\'embarquement. <strong>Maritime conventionnel uniquement</strong> — pour conteneurs utiliser CPT.'},
+  {code:'CIF',name:'Cost, Ins. & Freight',modes:['M'],desc:'Comme CFR avec assurance minimale incluse (clause C — couverture minimale). Réservé au <strong>maritime conventionnel</strong>. Pour conteneurs, préférer CIP qui exige une couverture tous risques. L\'assurance couvre 110% de la valeur facturée.'},
+  {code:'CPT',name:'Carriage Paid To',modes:['M','R'],desc:'Le vendeur paie le transport jusqu\'à la destination convenue. Le risque est transféré au premier transporteur. Adapté à tous modes de transport y compris le multimodal.'},
+  {code:'CIP',name:'Carriage & Ins. Paid',modes:['M','R'],desc:'Comme CPT avec assurance <strong>tous risques</strong> obligatoire (clause A). Équivalent conteneurisé de CIF avec une couverture nettement supérieure. Recommandé pour toute marchandise de valeur.'},
+  {code:'DAP',name:'Delivered At Place',modes:['M','R'],desc:'Le vendeur organise et paie le transport jusqu\'au lieu de destination convenu. L\'acheteur supporte le déchargement et gère le dédouanement à l\'import ainsi que les droits et taxes.'},
+  {code:'DPU',name:'Delivered At Place Unloaded',modes:['M','R'],desc:'Ancien DAT — le vendeur organise le transport et paie le déchargement au lieu de destination. Seul Incoterm où le vendeur supporte le déchargement. L\'acheteur gère le dédouanement import et s\'acquitte des droits et taxes.'},
+  {code:'DDP',name:'Delivered Duty Paid',modes:['M','R'],desc:'Obligation maximale du vendeur : livraison à destination, dédouanée, droits et taxes payés. Vérifier que la réglementation du pays de destination <strong>autorise un importateur étranger</strong> à effectuer les formalités douanières.'},
+];
+
+const RATES={USD:1,EUR:1.08,XAF:0.00161,CNY:0.138,GBP:1.27};
+const CEMAC_UEMOA=['congo','brazzaville','pointe-noire','cameroun','douala','gabon','libreville','rca','bangui','tchad','ndjamena','guinée équatoriale','malabo','sénégal','dakar','côte d\'ivoire','abidjan','mali','bamako','burkina','ouagadougou','niger','niamey','bénin','cotonou','togo','lomé','guinée-bissau'];
+const CONTAINER_LIMITS={'20ST':{maxWeight:21700,maxVol:33},'40ST':{maxWeight:26500,maxVol:67},'40HC':{maxWeight:26460,maxVol:76},'20RF':{maxWeight:27400,maxVol:28},'40RF':{maxWeight:29500,maxVol:67}};
+
+let selectedIncoterm=null,currentMode='maritime',costRows=[],rowId=0;
+
+function getCurrSym(c){return{USD:'$',EUR:'€',XAF:'FCFA',CNY:'¥',GBP:'£'}[c]||c}
+function fmt(v){return v.toLocaleString('fr-FR',{minimumFractionDigits:2,maximumFractionDigits:2})}
+function hasInsurance(){return costRows.some(id=>{const r=document.getElementById('row-'+id);if(!r)return false;const t=r.querySelector('input[type=text]');return t&&/assur/i.test(t.value)})}
+function getTotal(){let s=0;costRows.forEach(id=>{const r=document.getElementById('row-'+id);if(!r)return;const ins=r.querySelectorAll('input[type=number]');s+=(parseFloat(ins[0].value)||1)*(parseFloat(ins[1].value)||0)});return s}
+function isCEMAC(dest){const d=(dest||'').toLowerCase();return CEMAC_UEMOA.some(k=>d.includes(k))}
+
+function setMode(mode,btn){
+  currentMode=mode;
+  document.querySelectorAll('.mode-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('maritime-fields').style.display=mode==='maritime'?'grid':'none';
+  document.getElementById('road-fields').style.display=mode==='road'?'grid':'none';
+  selectedIncoterm=null;
+  renderIncoterms();runAlerts();
+}
+
+function renderIncoterms(){
+  const mk=currentMode==='maritime'?'M':'R';
+  document.getElementById('incoterm-grid').innerHTML=INCOTERMS.filter(i=>i.modes.includes(mk)).map(i=>
+    `<button class="inc-btn${selectedIncoterm===i.code?' selected':''}" onclick="selectIncoterm('${i.code}')">${i.code}<span class="inc-badge">${i.name}</span></button>`
+  ).join('');
+}
+
+function selectIncoterm(code){
+  selectedIncoterm=code;
+  renderIncoterms();
+  const inc=INCOTERMS.find(i=>i.code===code);
+  const d=document.getElementById('inc-desc');
+  d.style.display='block';
+  d.innerHTML=`<strong>${inc.code} – ${inc.name}</strong> | Incoterms® 2020<br><br>${inc.desc}`;
+  runAlerts();
+}
+
+function makeAlert(type,icon,title,msg){
+  return`<div class="alert a-${type}"><div class="a-icon">${icon}</div><div><div class="a-title">${title}</div>${msg}</div></div>`;
+}
+
+function runAlerts(){
+  const inc=selectedIncoterm;
+  const st=document.getElementById('shipment-type')?.value||'FCL';
+  const cont=document.getElementById('container')?.value||'20ST';
+  const pay=document.getElementById('payment')?.value||'';
+  const weight=parseFloat(document.getElementById('weight')?.value)||0;
+  const volume=parseFloat(document.getElementById('volume')?.value)||0;
+  const goodsVal=parseFloat(document.getElementById('goods-value')?.value)||0;
+  const goods=document.getElementById('goods')?.value||'';
+  const hs=document.getElementById('hs')?.value||'';
+  const origin=(document.getElementById('origin')?.value||'').toLowerCase().trim();
+  const dest=(document.getElementById('dest')?.value||'').toLowerCase().trim();
+  const validity=parseInt(document.getElementById('validity')?.value)||30;
+  const km=parseFloat(document.getElementById('km')?.value)||0;
+  const total=getTotal();
+  const hasCont=cont&&CONTAINER_LIMITS[cont];
+  const isRefCont=['20RF','40RF'].includes(cont);
+
+  const incAlerts=[],globalAlerts=[];
+
+  // FAMILLE 1 — Erreurs Incoterm
+  if(inc){
+    if(['FCL','LCL'].includes(st)&&['FOB','CFR','CIF','FAS'].includes(inc)){
+      const alt=inc==='FOB'?'FCA':inc==='CFR'?'CPT':inc==='CIF'?'CIP':'FCA';
+      incAlerts.push(makeAlert('err','⚠','Incoterm incompatible avec le conteneur',`<strong>${inc}</strong> est réservé au transport maritime conventionnel (vrac). Pour un envoi en conteneur (${st}), utilisez <strong>${alt}</strong>.`));
+    }
+    if(inc==='EXW'){
+      incAlerts.push(makeAlert('warn','!','EXW déconseillé en commerce international','Selon la CCI, EXW est fortement déconseillé pour les échanges internationaux — réserver aux échanges domestiques. Préférez <strong>FCA</strong> (lieu du vendeur) pour l\'export.'));
+    }
+    if(inc==='DDP'){
+      incAlerts.push(makeAlert('warn','!','DDP : vérifier les règles d\'importation locales','Certains pays, notamment en Afrique, n\'autorisent pas les sociétés étrangères à agir comme importateurs officiels. Vérifiez la réglementation avant d\'accepter un DDP.'));
+    }
+    if(pay==='LC'&&['CPT','CIP','DAP','DPU','DDP'].includes(inc)){
+      incAlerts.push(makeAlert('warn','!','Compatibilité Lettre de crédit à vérifier',`<strong>${inc}</strong> génère généralement une LTA, pas un B/L classique. Confirmez l\'acceptabilité avec votre banque. <em>Note : sous FCA (Incoterms 2020), le vendeur peut récupérer un B/L à bord.</em>`));
+    }
+    if(pay==='LC'&&inc==='FCA'){
+      incAlerts.push(makeAlert('ok','✓','FCA compatible avec la Lettre de crédit (Incoterms 2020)','Depuis les Incoterms 2020, FCA permet au vendeur de récupérer un connaissement à bord (B/L) auprès du transporteur de l\'acheteur — document accepté par les banques pour une L/C.'));
+    }
+    if(pay==='LC'&&inc==='FOB'){
+      incAlerts.push(makeAlert('ok','✓','FOB compatible avec la Lettre de crédit','FOB génère un connaissement maritime à bord (B/L), généralement accepté par les banques dans le cadre d\'une L/C.'));
+    }
+    if(pay==='OA'&&['CFR','CIF'].includes(inc)){
+      incAlerts.push(makeAlert('warn','!','Exposition élevée : '+inc+' + compte ouvert','Le risque est transféré à l\'embarquement mais le paiement est différé. Exposition élevée pour le vendeur — envisager une assurance-crédit.'));
+    }
+    if(inc==='CIF'){
+      incAlerts.push(makeAlert('info','ℹ','CIF : couverture assurance minimale (clause C)','CIF inclut une assurance minimale clause C (couverture partielle). Pour une couverture <strong>tous risques</strong> (clause A), utilisez <strong>CIP</strong> — obligatoire depuis les Incoterms 2020.'));
+    }
+    if(goodsVal>50000&&inc==='EXW'){
+      incAlerts.push(makeAlert('info','ℹ','Valeur élevée sous EXW','Sous EXW, le vendeur n\'est pas couvert dès la sortie d\'entrepôt. Une assurance transport dès le départ est fortement recommandée.'));
+    }
+    if(['EXW','FOB','CFR'].includes(inc)&&!hasInsurance()&&goodsVal>0){
+      incAlerts.push(makeAlert('info','ℹ','Assurance non incluse dans '+inc,`<strong>${inc}</strong> n\'inclut pas d\'assurance transport. Pensez à l\'ajouter comme poste de coût ou à le mentionner dans les conditions.`));
+    }
+    if(isRefCont&&['EXW','FOB','CFR'].includes(inc)){
+      incAlerts.push(makeAlert('warn','!','Conteneur réfrigéré : assurance recommandée','Les conteneurs réfrigérés présentent un risque élevé d\'avarie. Préférez un Incoterm incluant l\'assurance (<strong>CIP</strong> ou <strong>CIF</strong>).'));
+    }
+    if(inc==='DDP'&&isCEMAC(dest)){
+      incAlerts.push(makeAlert('warn','!','DDP en zone CEMAC/UEMOA : commissionnaire requis','En zone CEMAC/UEMOA, le dédouanement DDP nécessite un commissionnaire en douane agréé local. Précisez ce point dans les conditions particulières.'));
+    }
+    if(!incAlerts.length){
+      incAlerts.push(makeAlert('ok','✓','Incoterm valide pour ce contexte',`<strong>${inc}</strong> – Incoterms® 2020 est adapté au mode de transport et au contexte saisi. Aucune incompatibilité détectée.`));
+    }
+  }
+
+  // FAMILLE 2 — Données marchandise
+  if(goodsVal===0&&total>0) globalAlerts.push(makeAlert('warn','!','Valeur commerciale manquante','Nécessaire pour calculer l\'assurance et les droits de douane.'));
+  if(!hs&&dest) globalAlerts.push(makeAlert('warn','!','Code HS recommandé','Le code HS est requis pour le dédouanement à l\'import. Son absence peut bloquer ou retarder la marchandise.'));
+  if(hasCont&&weight>0){const l=CONTAINER_LIMITS[cont];if(weight>l.maxWeight) globalAlerts.push(makeAlert('err','⚠',`Poids excessif pour un ${cont}`,`${weight.toLocaleString('fr-FR')} kg déclarés — capacité maximale : ${l.maxWeight.toLocaleString('fr-FR')} kg.`));}
+  if(hasCont&&volume>0){const l=CONTAINER_LIMITS[cont];if(volume>l.maxVol) globalAlerts.push(makeAlert('warn','!',`Volume excessif pour un ${cont}`,`${volume} m³ déclarés — capacité maximale : ${l.maxVol} m³. Envisagez un conteneur plus grand.`));}
+  if(!goods) globalAlerts.push(makeAlert('warn','!','Nature de la marchandise manquante','Requise pour les documents douaniers et l\'assurance.'));
+
+  // FAMILLE 3 — Cohérence formulaire
+  if(origin&&dest&&origin===dest) globalAlerts.push(makeAlert('err','⚠','Origine et destination identiques','Vérifiez les informations saisies.'));
+  if(validity<7) globalAlerts.push(makeAlert('warn','!','Validité très courte',`${validity} jours — 7 jours est le minimum recommandé pour une soumission sérieuse.`));
+  if(inc&&['CPT','CIP','DAP','DPU','DDP','CFR','CIF'].includes(inc)&&total===0) globalAlerts.push(makeAlert('err','⚠','Postes de coût manquants',`Un Incoterm ${inc} implique des frais de transport à la charge du vendeur. Au moins un poste doit être renseigné.`));
+  if(currentMode==='road'&&km>2000) globalAlerts.push(makeAlert('info','ℹ','Transport long-courrier','Pour un routier de plus de 2 000 km en Afrique, précisez les corridors et points de passage douaniers dans les conditions.'));
+  if(goodsVal>100000&&!hasInsurance()) globalAlerts.push(makeAlert('warn','!','Valeur élevée sans assurance','La valeur dépasse 100 000 USD sans poste d\'assurance — fortement recommandée.'));
+
+  document.getElementById('incoterm-alerts').innerHTML=incAlerts.join('');
+  document.getElementById('global-alert-zone').innerHTML=globalAlerts.join('');
+
+  const all=[...incAlerts,...globalAlerts];
+  const nErr=all.filter(a=>a.includes('a-err')).length;
+  const btn=document.getElementById('btn-gen');
+  btn.disabled=nErr>0;
+  btn.title=nErr>0?`${nErr} erreur(s) critique(s) à corriger avant de générer`:'';
+}
+
+function addCostRow(desc='',qty=1,amt=''){
+  const id=++rowId;
+  costRows.push(id);
+  const div=document.createElement('div');
+  div.className='cost-row';div.id='row-'+id;
+  div.innerHTML=`
+    <input type="text" placeholder="Ex: Fret maritime" value="${desc}" oninput="calcTotals();runAlerts()">
+    <input type="number" value="${qty}" min="1" oninput="calcTotals();runAlerts()" style="text-align:center">
+    <input type="number" placeholder="0.00" value="${amt}" step="0.01" oninput="calcTotals();runAlerts()" style="text-align:right">
+    <button class="del-btn" onclick="delRow(${id})">×</button>`;
+  document.getElementById('cost-rows').appendChild(div);
+  calcTotals();runAlerts();
+}
+
+function delRow(id){
+  costRows=costRows.filter(r=>r!==id);
+  document.getElementById('row-'+id)?.remove();
+  calcTotals();runAlerts();
+}
+
+function calcTotals(){
+  let sub=0;
+  costRows.forEach(id=>{
+    const row=document.getElementById('row-'+id);if(!row)return;
+    const ins=row.querySelectorAll('input[type=number]');
+    sub+=(parseFloat(ins[0].value)||1)*(parseFloat(ins[1].value)||0);
+  });
+  const tax=parseFloat(document.getElementById('tax').value)||0;
+  const taxAmt=sub*tax/100,grand=sub+taxAmt;
+  const cur=document.getElementById('currency').value,sym=getCurrSym(cur);
+  document.getElementById('subtotal').textContent=sym+' '+fmt(sub);
+  document.getElementById('tax-amount').textContent=sym+' '+fmt(taxAmt);
+  document.getElementById('grand-total').textContent=sym+' '+fmt(grand);
+  const cur2=document.getElementById('currency2').value;
+  const convDiv=document.getElementById('converted-total');
+  if(cur2&&cur2!==cur){
+    const rate=RATES[cur]/RATES[cur2];
+    convDiv.textContent='≈ '+getCurrSym(cur2)+' '+fmt(grand*rate)+' ('+cur2+')';
+    document.getElementById('rate-info').textContent='1 '+cur+' ≈ '+rate.toFixed(4)+' '+cur2;
+  }else{convDiv.textContent='';document.getElementById('rate-info').textContent=''}
+}
+
+function generateQuote(){
+  alert('La génération PDF sera disponible dans la version PRO.\n\nMerci de tester cet outil et de nous faire part de vos retours !');
+}
+
+function resetForm(){
+  if(!confirm('Réinitialiser le formulaire ?'))return;
+  document.querySelectorAll('input[type=text],input[type=number],input[type=date],textarea').forEach(el=>{if(el.id!=='tax')el.value=''});
+  document.getElementById('tax').value=0;
+  document.getElementById('validity').value=30;
+  selectedIncoterm=null;costRows=[];
+  document.getElementById('cost-rows').innerHTML='';
+  document.getElementById('inc-desc').style.display='none';
+  document.getElementById('incoterm-alerts').innerHTML='';
+  document.getElementById('global-alert-zone').innerHTML='';
+  renderIncoterms();calcTotals();
+  document.getElementById('date').value=new Date().toISOString().split('T')[0];
+  addCostRow('Fret maritime / routier',1,'');
+  addCostRow('Frais portuaires / manutention',1,'');
+  addCostRow('Dédouanement',1,'');
+  addCostRow('Assurance',1,'');
+}
+
+// Init
+document.getElementById('date').value=new Date().toISOString().split('T')[0];
+renderIncoterms();
+addCostRow('Fret maritime / routier',1,'');
+addCostRow('Frais portuaires / manutention',1,'');
+addCostRow('Dédouanement',1,'');
+addCostRow('Assurance',1,'');
+</script>
+</body>
+</html>
